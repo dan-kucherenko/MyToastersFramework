@@ -11,16 +11,22 @@ let package = Package(
             name: "MyToastersFramework",
             targets: ["MyToastersFramework"]),
     ],
+    
+    dependencies: [
+        .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", from: "0.57.0")
+    ],
+    
     targets: [
         .target(
             name: "MyToastersFramework",
-            dependencies: [],
-            path: "Sources"
+            path: "Sources",
+            plugins: [.plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")]
         ),
         .testTarget(
             name: "MyToastersFrameworkTests",
             dependencies: ["MyToastersFramework"],
-            path: "Tests/MyToastersFrameworkTests"
+            path: "Tests/MyToastersFrameworkTests",
+            plugins: [.plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")]
         ),
     ]
 )
