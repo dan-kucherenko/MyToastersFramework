@@ -15,7 +15,8 @@ let package = Package(
         .target(
             name: "MyToastersFramework",
             dependencies: [],
-            path: "Sources"),
+            path: "Sources"
+        ),
         .testTarget(
             name: "MyToastersFrameworkTests",
             dependencies: ["MyToastersFramework"],
