@@ -2,32 +2,29 @@ import UIKit
 
 @MainActor
 open class ToastCenter: NSObject {
-    
+
     // MARK: Properties
-    
     private let queue: OperationQueue = {
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
         return queue
     }()
-    
+
     open var currentToast: Toast? {
         return self.queue.operations.first { !$0.isCancelled && !$0.isFinished } as? Toast
     }
-    
+
     /// If this value is `true` and the user is using VoiceOver,
     /// VoiceOver will announce the text in the toast when `ToastView` is displayed.
     public var isSupportAccessibility: Bool = true
-    
+
     /// By default, queueing for toast is enabled.
     /// If this value is `false`, only the last requested toast will be shown.
     public var isQueueEnabled: Bool = true
-    
+
     public static let `default` = ToastCenter()
-    
-    
+
     // MARK: Initializing
-    
     override init() {
         super.init()
         let name = UIDevice.orientationDidChangeNotification
@@ -38,25 +35,21 @@ open class ToastCenter: NSObject {
             object: nil
         )
     }
-    
-    
+
     // MARK: Adding Toasts
-    
+
     open func add(_ toast: Toast) {
         if !isQueueEnabled {
             cancelAll()
         }
         self.queue.addOperation(toast)
     }
-    
-    
+
     // MARK: Cancelling Toasts
-    
     open func cancelAll() {
         queue.cancelAllOperations()
     }
-    
-    
+
     // MARK: Notifications
     @objc
     dynamic func deviceOrientationDidChange() {
@@ -64,5 +57,4 @@ open class ToastCenter: NSObject {
             lastToast.view.setNeedsLayout()
         }
     }
-    
 }

@@ -10,11 +10,11 @@ import UIKit
 
 @MainActor
 final class KeyboardObserver {
-    
+
     static let shared = KeyboardObserver()
-    
+
     private(set) var didKeyboardShow: Bool = false
-    
+
     init() {
         let keyboardWillShowName = UIWindow.keyboardWillShowNotification
         let keyboardDidHideName = UIWindow.keyboardDidHideNotification
@@ -31,13 +31,12 @@ final class KeyboardObserver {
             object: nil
         )
     }
-    
+
     @objc private func keyboardWillShow() {
         didKeyboardShow = true
     }
-    
+
     @objc private func keyboardDidHide() {
         didKeyboardShow = false
     }
 }
-

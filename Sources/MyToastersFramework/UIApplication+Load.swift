@@ -13,7 +13,7 @@ extension UIApplication {
         UIApplication.runOnce
         return super.next
     }
-    
+
     private static let runOnce: Void = {
         _ = KeyboardObserver.shared
     }()

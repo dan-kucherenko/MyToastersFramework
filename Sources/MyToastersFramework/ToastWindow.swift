@@ -1,20 +1,19 @@
 import UIKit
 
 open class ToastWindow: UIWindow {
-    
+
     // MARK: - Public Property
-    
     public static let shared: ToastWindow = {
         let windowScene = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .first(where: { $0.activationState == .foregroundActive })
-        
+
         let frame = windowScene?.screen.bounds ?? UIScreen.main.bounds
         let mainWindow = windowScene?.windows.first { $0.isKeyWindow }
-        
+
         return ToastWindow(frame: frame, mainWindow: mainWindow)
     }()
-    
+
     override open var rootViewController: UIViewController? {
         get {
             guard !self.isShowing else {
@@ -27,20 +26,16 @@ open class ToastWindow: UIWindow {
         }
         set { /* Do nothing */ }
     }
-    
+
     override open var isHidden: Bool {
         willSet {
-            if #available(iOS 13.0, *) {
-                isShowing = true
-            }
+            isShowing = true
         }
         didSet {
-            if #available(iOS 13.0, *) {
-                isShowing = false
-            }
+            isShowing = false
         }
     }
-    
+
     /// Don't rotate manually if the application:
     ///
     /// - is running on iPad
@@ -54,32 +49,31 @@ open class ToastWindow: UIWindow {
         let application = UIApplication.shared
         let window = application.delegate?.window ?? nil
         let supportsAllOrientations = application.supportedInterfaceOrientations(for: window) == .all
-        
+
         let info = Bundle.main.infoDictionary
         let requiresFullScreen = (info?["UIRequiresFullScreen"] as? NSNumber)?.boolValue == true
         let hasLaunchStoryboard = info?["UILaunchStoryboardName"] != nil
-        
-        if #available(iOS 9, *), iPad && supportsAllOrientations && !requiresFullScreen && hasLaunchStoryboard {
+
+        if iPad && supportsAllOrientations && !requiresFullScreen && hasLaunchStoryboard {
             return false
         }
         return true
     }
-    
-    
+
     // MARK: - Private Property
-    
+
     /// Will not return `rootViewController` while this value is `true`. Or the rotation will be fucked in iOS 9.
     private var isStatusBarOrientationChanging = false
-    
+
     /// Will not return `rootViewController` while this value is `true`. Needed for iOS 13.
     private var isShowing = false
-    
+
     /// Returns original subviews. `ToastWindow` overrides `addSubview()` to add a subview to the
     /// top window instead itself.
     private var originalSubviews = NSPointerArray.weakObjects()
-    
+
     private weak var mainWindow: UIWindow?
-    
+
     // MARK: - Initializing
     public init(frame: CGRect, mainWindow: UIWindow?) {
         super.init(frame: frame)
@@ -89,16 +83,16 @@ open class ToastWindow: UIWindow {
         self.windowLevel = .init(rawValue: .greatestFiniteMagnitude)
         self.backgroundColor = .clear
         self.isHidden = false
-        
+
         self.handleRotate()
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(self.deviceOrientationDidChange),
             name: UIDevice.orientationDidChangeNotification,
             object: nil
         )
-        
+
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(self.applicationDidBecomeActive),
@@ -118,34 +112,33 @@ open class ToastWindow: UIWindow {
             object: nil
         )
     }
-    
+
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented: please use ToastWindow.shared")
     }
-    
+
     @objc private func deviceOrientationDidChange() {
         self.handleRotate() // Update your view orientation
     }
-    
+
     // MARK: - Public method
     override open func addSubview(_ view: UIView) {
         super.addSubview(view)
         self.originalSubviews.addPointer(Unmanaged.passUnretained(view).toOpaque())
         self.topWindow()?.addSubview(view)
     }
-    
+
     open override func becomeKey() {
         super.becomeKey()
         mainWindow?.makeKey()
     }
-    
-    
+
     // MARK: - Private method
     @objc
     private func statusBarOrientationWillChange() {
         self.isStatusBarOrientationChanging = true
     }
-    
+
     @objc
     private func statusBarOrientationDidChange() {
         if UIApplication.shared.connectedScenes
@@ -155,8 +148,7 @@ open class ToastWindow: UIWindow {
         }
         self.isStatusBarOrientationChanging = false
     }
-    
-    
+
     @objc
     private func applicationDidBecomeActive() {
         if UIApplication.shared.connectedScenes
@@ -165,7 +157,7 @@ open class ToastWindow: UIWindow {
             self.handleRotate()
         }
     }
-    
+
     @objc
     private func keyboardWillShow() {
         guard let topWindow = self.topWindow(),
@@ -174,7 +166,7 @@ open class ToastWindow: UIWindow {
             topWindow.addSubview(subview)
         }
     }
-    
+
     @objc
     private func keyboardDidHide() {
         guard let subviews = self.originalSubviews.allObjects as? [UIView] else { return }
@@ -182,15 +174,15 @@ open class ToastWindow: UIWindow {
             super.addSubview(subview)
         }
     }
-    
+
     private func handleRotate() {
         if let windowScene = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .first,
            let window = windowScene.windows.first {
-            
+
             let orientation = windowScene.interfaceOrientation
-            
+
             if orientation.isPortrait || !self.shouldRotateManually {
                 self.frame.size.width = window.bounds.size.width
                 self.frame.size.height = window.bounds.size.height
@@ -200,7 +192,7 @@ open class ToastWindow: UIWindow {
             }
         }
     }
-    
+
     private func angleForOrientation(_ orientation: UIInterfaceOrientation) -> Double {
         switch orientation {
         case .landscapeLeft: return -.pi / 2
@@ -209,10 +201,13 @@ open class ToastWindow: UIWindow {
         default: return 0
         }
     }
-    
+
     /// Returns top window that isn't self
     private func topWindow() -> UIWindow? {
-        if let windowScene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+        if let windowScene = UIApplication.shared.connectedScenes.first(
+            where: {
+                $0.activationState == .foregroundActive
+            }) as? UIWindowScene,
            let window = windowScene.windows.last(where: {
                // Use `window` here
                // https://github.com/devxoul/Toaster/issues/152
