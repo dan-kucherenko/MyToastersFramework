@@ -2,8 +2,6 @@ import UIKit
 
 public class Delay: NSObject {
     private override init() {}
-    // `short` and `long` (lowercase) are reserved words in Objective-C
-    // so we capitalize them instead of the default `short_` and `long_`
     public static let short: TimeInterval = 2.0
     public static let long: TimeInterval = 3.5
 }
@@ -54,9 +52,9 @@ open class Toast: Operation, @unchecked Sendable {
     // MARK: UI
     @MainActor
     public lazy var view: ToastView = ToastView()
-
+    
     // MARK: Initializing
-
+    
     /// Initializer.
     /// Instantiates `self.view`, so must be called on main thread.
     public init(text: String?, delay: TimeInterval = 0, duration: TimeInterval = Delay.short) {
@@ -68,7 +66,7 @@ open class Toast: Operation, @unchecked Sendable {
             self.text = text
         }
     }
-
+    
     @MainActor
     public init(attributedText: NSAttributedString?, delay: TimeInterval = 0, duration: TimeInterval = Delay.short) {
         self.delay = delay

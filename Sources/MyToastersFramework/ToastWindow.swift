@@ -81,58 +81,6 @@ open class ToastWindow: UIWindow {
     private weak var mainWindow: UIWindow?
     
     // MARK: - Initializing
-    
-//    public init(frame: CGRect, mainWindow: UIWindow?) {
-//        super.init(frame: frame)
-//        self.mainWindow = mainWindow
-//        self.isUserInteractionEnabled = false
-//        self.gestureRecognizers = nil
-//        self.windowLevel = .init(rawValue: .greatestFiniteMagnitude)
-//        let willChangeStatusBarOrientationName = UIApplication.willChangeStatusBarOrientationNotification
-//        let didChangeStatusBarOrientationName = UIApplication.didChangeStatusBarOrientationNotification
-//        let didBecomeActiveName = UIApplication.didBecomeActiveNotification
-//        let keyboardWillShowName = UIWindow.keyboardWillShowNotification
-//        let keyboardDidHideName = UIWindow.keyboardDidHideNotification
-//        self.backgroundColor = .clear
-//        self.isHidden = false
-//        self.handleRotate()
-//        
-//        NotificationCenter.default.addObserver(
-//            self,
-//            selector: #selector(self.statusBarOrientationWillChange),
-//            name: willChangeStatusBarOrientationName,
-//            object: nil
-//        )
-//        NotificationCenter.default.addObserver(
-//            self,
-//            selector: #selector(self.statusBarOrientationDidChange),
-//            name: didChangeStatusBarOrientationName,
-//            object: nil
-//        )
-//        NotificationCenter.default.addObserver(
-//            self,
-//            selector: #selector(self.applicationDidBecomeActive),
-//            name: didBecomeActiveName,
-//            object: nil
-//        )
-//        NotificationCenter.default.addObserver(
-//            self,
-//            selector: #selector(self.keyboardWillShow),
-//            name: keyboardWillShowName,
-//            object: nil
-//        )
-//        NotificationCenter.default.addObserver(
-//            self,
-//            selector: #selector(self.keyboardDidHide),
-//            name: keyboardDidHideName,
-//            object: nil
-//        )
-//    }
-//    
-//    required public init?(coder aDecoder: NSCoder) {
-//        fatalError("init(coder:) has not been implemented: please use ToastWindow.shared")
-//    }
-//    
     public init(frame: CGRect, mainWindow: UIWindow?) {
         super.init(frame: frame)
         self.mainWindow = mainWindow
@@ -142,10 +90,8 @@ open class ToastWindow: UIWindow {
         self.backgroundColor = .clear
         self.isHidden = false
         
-        // Handle initial orientation setup
         self.handleRotate()
         
-        // Replace deprecated orientation notifications with `UIDevice.orientationDidChangeNotification`
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(self.deviceOrientationDidChange),
@@ -153,7 +99,6 @@ open class ToastWindow: UIWindow {
             object: nil
         )
         
-        // Other notifications remain unchanged
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(self.applicationDidBecomeActive),
@@ -173,15 +118,15 @@ open class ToastWindow: UIWindow {
             object: nil
         )
     }
-
+    
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented: please use ToastWindow.shared")
     }
-
+    
     @objc private func deviceOrientationDidChange() {
         self.handleRotate() // Update your view orientation
     }
-
+    
     // MARK: - Public method
     override open func addSubview(_ view: UIView) {
         super.addSubview(view)
@@ -210,7 +155,7 @@ open class ToastWindow: UIWindow {
         }
         self.isStatusBarOrientationChanging = false
     }
-
+    
     
     @objc
     private func applicationDidBecomeActive() {
