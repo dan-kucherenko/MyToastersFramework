@@ -116,34 +116,32 @@ open class ToastView: UIView {
 
     // MARK: UI
     private let backgroundView: UIView = {
-        let `self` = UIView()
-        self.backgroundColor = UIColor(white: 0, alpha: 0.7)
-        self.layer.cornerRadius = 5
-        self.clipsToBounds = true
-        return self
+        let view = UIView()
+        view.backgroundColor = UIColor(white: 0, alpha: 0.7)
+        view.layer.cornerRadius = 5
+        view.clipsToBounds = true
+        return view
     }()
 
     private let textLabel: UILabel = {
-        let `self` = UILabel()
-        self.textColor = .white
-        self.backgroundColor = .clear
-        self.font = {
+        let label = UILabel()
+        label.textColor = .white
+        label.backgroundColor = .clear
+        label.font = {
             switch UIDevice.current.userInterfaceIdiom {
-                // specific values
             case .phone: return .systemFont(ofSize: 12)
             case .pad: return .systemFont(ofSize: 16)
             case .tv: return .systemFont(ofSize: 20)
             case .carPlay: return .systemFont(ofSize: 12)
             case .mac: return .systemFont(ofSize: 16)
             case .vision: return .systemFont(ofSize: 16)
-                // default values
             case .unspecified: fallthrough
             @unknown default: return .systemFont(ofSize: 12)
             }
         }()
-        self.numberOfLines = 0
-        self.textAlignment = .center
-        return self
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        return label
     }()
 
     // MARK: Initializing
@@ -161,18 +159,21 @@ open class ToastView: UIView {
     // MARK: Layout
     override open func layoutSubviews() {
         super.layoutSubviews()
+
         let containerSize = ToastWindow.shared.frame.size
         let constraintSize = CGSize(
             width: containerSize.width * maxWidthRatio - self.textInsets.left - self.textInsets.right,
             height: CGFloat.greatestFiniteMagnitude
         )
         let textLabelSize = self.textLabel.sizeThatFits(constraintSize)
+
         self.textLabel.frame = CGRect(
             x: self.textInsets.left,
             y: self.textInsets.top,
             width: textLabelSize.width,
             height: textLabelSize.height
         )
+
         self.backgroundView.frame = CGRect(
             x: 0,
             y: 0,
@@ -185,8 +186,12 @@ open class ToastView: UIView {
         var width: CGFloat
         var height: CGFloat
 
-        let orientation = UIApplication.shared.statusBarOrientation
-        if orientation.isPortrait || !ToastWindow.shared.shouldRotateManually {
+        // Obtain interface orientation from UIWindowScene
+        let interfaceOrientation = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.interfaceOrientation ?? .portrait
+
+        if interfaceOrientation.isPortrait || !ToastWindow.shared.shouldRotateManually {
             width = containerSize.width
             height = containerSize.height
             yCoordinate = self.bottomOffsetPortrait
@@ -195,13 +200,15 @@ open class ToastView: UIView {
             height = containerSize.width
             yCoordinate = self.bottomOffsetLandscape
         }
-        if #available(iOS 11.0, *), useSafeAreaForBottomOffset {
+
+        if useSafeAreaForBottomOffset {
             yCoordinate += ToastWindow.shared.safeAreaInsets.bottom
         }
 
         let backgroundViewSize = self.backgroundView.frame.size
         xCoordinate = (width - backgroundViewSize.width) * 0.5
         yCoordinate = height - (backgroundViewSize.height + yCoordinate)
+
         self.frame = CGRect(
             x: xCoordinate,
             y: yCoordinate,
