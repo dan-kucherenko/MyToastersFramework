@@ -27,6 +27,12 @@ open class Toast: Operation, @unchecked Sendable {
         set { self.view.attributedText = newValue }
     }
 
+    @MainActor
+    public var image: UIImage? {
+        get { return self.view.image }
+        set { self.view.image = newValue }
+    }
+
     public var delay: TimeInterval
     public var duration: TimeInterval
 
@@ -75,6 +81,7 @@ open class Toast: Operation, @unchecked Sendable {
     @MainActor
     public init(
         text: String?,
+        image: UIImage? = nil,
         delay: TimeInterval = 0,
         duration: TimeInterval = Delay.short,
         appearanceAnimation: AppearanceAnimationStyle = .fadeIn,
@@ -89,6 +96,7 @@ open class Toast: Operation, @unchecked Sendable {
         super.init()
 
         self.text = text
+        self.image = image
     }
 
     /// Initializes a `Toast` instance with attributed text.
@@ -103,6 +111,7 @@ open class Toast: Operation, @unchecked Sendable {
     @MainActor
     public init(
         attributedText: NSAttributedString?,
+        image: UIImage? = nil,
         delay: TimeInterval = 0,
         duration: TimeInterval = Delay.short,
         appearanceAnimation: AppearanceAnimationStyle = .fadeIn,
@@ -117,6 +126,7 @@ open class Toast: Operation, @unchecked Sendable {
         super.init()
 
         self.attributedText = attributedText
+        self.image = image
     }
 
     // MARK: Showing

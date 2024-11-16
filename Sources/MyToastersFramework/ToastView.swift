@@ -1,4 +1,5 @@
 import UIKit
+import SnapKit
 
 /// A customizable view for displaying toast messages.
 ///
@@ -17,6 +18,15 @@ open class ToastView: UIView {
     open var attributedText: NSAttributedString? {
         get { return self.textLabel.attributedText }
         set { self.textLabel.attributedText = newValue }
+    }
+
+    open var image: UIImage? {
+        get { return self.imageView.image }
+        set {
+            self.imageView.image = newValue
+            self.imageView.isHidden = (newValue == nil)
+            self.setNeedsLayout()
+        }
     }
 
     // MARK: Appearance
@@ -149,11 +159,19 @@ open class ToastView: UIView {
         return label
     }()
 
+    private let imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.isHidden = true
+        return imageView
+    }()
+
     // MARK: Initializing
     public init() {
         super.init(frame: .zero)
         self.isUserInteractionEnabled = false
         self.addSubview(self.backgroundView)
+        self.addSubview(self.imageView)
         self.addSubview(self.textLabel)
     }
 
@@ -170,61 +188,50 @@ open class ToastView: UIView {
     override open func layoutSubviews() {
         super.layoutSubviews()
 
-        let containerSize = ToastWindow.shared.frame.size
-        let constraintSize = CGSize(
-            width: containerSize.width * maxWidthRatio - self.textInsets.left - self.textInsets.right,
-            height: CGFloat.greatestFiniteMagnitude
-        )
-        let textLabelSize = self.textLabel.sizeThatFits(constraintSize)
+        let padding: CGFloat = 10
+        let maxWidthRatio: CGFloat = 0.8
 
-        self.textLabel.frame = CGRect(
-            x: self.textInsets.left,
-            y: self.textInsets.top,
-            width: textLabelSize.width,
-            height: textLabelSize.height
+        let imageViewSize = imageView.image != nil ? CGSize(width: 40, height: 40) : .zero
+        let textLabelSize = textLabel.sizeThatFits(
+            CGSize(
+                width: UIScreen.main.bounds.width * maxWidthRatio - imageViewSize.width - 3 * padding,
+                height: CGFloat.greatestFiniteMagnitude
+            )
         )
 
-        self.backgroundView.frame = CGRect(
-            x: 0,
-            y: 0,
-            width: self.textLabel.frame.size.width + self.textInsets.left + self.textInsets.right,
-            height: self.textLabel.frame.size.height + self.textInsets.top + self.textInsets.bottom
+        let toastWidth = min(
+            UIScreen.main.bounds.width * maxWidthRatio,
+            imageViewSize.width + textLabelSize.width + 3 * padding
         )
+        let toastHeight = max(imageViewSize.height, textLabelSize.height) + 2 * padding
 
-        var xCoordinate: CGFloat
-        var yCoordinate: CGFloat
-        var width: CGFloat
-        var height: CGFloat
-
-        // Obtain interface orientation from UIWindowScene
-        let interfaceOrientation = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?.interfaceOrientation ?? .portrait
-
-        if interfaceOrientation.isPortrait || !ToastWindow.shared.shouldRotateManually {
-            width = containerSize.width
-            height = containerSize.height
-            yCoordinate = self.bottomOffsetPortrait
-        } else {
-            width = containerSize.height
-            height = containerSize.width
-            yCoordinate = self.bottomOffsetLandscape
+        backgroundView.snp.remakeConstraints { make in
+            make.edges.equalToSuperview()
         }
 
-        if useSafeAreaForBottomOffset {
-            yCoordinate += ToastWindow.shared.safeAreaInsets.bottom
+        imageView.snp.remakeConstraints { make in
+            make.leading.equalToSuperview().offset(padding)
+            make.centerY.equalToSuperview()
+            if imageViewSize != .zero {
+                make.width.equalTo(imageViewSize.width)
+                make.height.equalTo(imageViewSize.height)
+            } else {
+                make.width.height.equalTo(0)
+            }
         }
 
-        let backgroundViewSize = self.backgroundView.frame.size
-        xCoordinate = (width - backgroundViewSize.width) * 0.5
-        yCoordinate = height - (backgroundViewSize.height + yCoordinate)
+        textLabel.snp.remakeConstraints { make in
+            make.leading.equalTo(imageView.snp.trailing).offset(imageViewSize != .zero ? padding : 0)
+            make.trailing.lessThanOrEqualToSuperview().offset(-padding)
+            make.centerY.equalToSuperview()
+        }
 
-        self.frame = CGRect(
-            x: xCoordinate,
-            y: yCoordinate,
-            width: backgroundViewSize.width,
-            height: backgroundViewSize.height
-        )
+        self.snp.remakeConstraints { make in
+            make.width.equalTo(toastWidth)
+            make.height.equalTo(toastHeight)
+            make.centerX.equalToSuperview()
+            make.bottom.equalToSuperview().inset(50)
+        }
     }
 
     /// Determines whether the toast view should handle touch events.
