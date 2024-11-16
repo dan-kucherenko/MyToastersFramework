@@ -133,7 +133,7 @@ open class ToastWindow: UIWindow {
     }
 
     // MARK: - Public method
-    
+
     /// Adds a subview to the `ToastWindow`.
     ///
     /// The subview is also added to the top-most window in the application.

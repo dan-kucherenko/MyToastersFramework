@@ -91,7 +91,7 @@ open class ToastCenter: NSObject {
     ///
     /// - Note: Only the first toast in the queue (the currently displayed toast) will be affected.
     @objc
-    dynamic func deviceOrientationDidChange() {
+    func deviceOrientationDidChange() {
         if let lastToast = self.queue.operations.first as? Toast {
             lastToast.view.setNeedsLayout()
         }

@@ -1,10 +1,3 @@
-//
-//  AnimationStyle.swift
-//  MyToastersFramework
-//
-//  Created by Daniil on 16.11.2024.
-//
-
 import UIKit
 
 public enum AppearanceAnimationStyle {
