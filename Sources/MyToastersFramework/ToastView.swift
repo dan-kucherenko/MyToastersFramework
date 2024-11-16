@@ -1,5 +1,10 @@
 import UIKit
 
+/// A customizable view for displaying toast messages.
+///
+/// `ToastView` provides a lightweight and flexible way to display toast-style notifications.
+/// The view includes customizable text, appearance, and layout properties, and is designed
+/// to adapt to various screen sizes and orientations.
 open class ToastView: UIView {
 
     // MARK: Properties
@@ -157,6 +162,11 @@ open class ToastView: UIView {
     }
 
     // MARK: Layout
+    
+    /// Updates the layout of the toast view and its subviews.
+    ///
+    /// This method calculates the size and position of the `textLabel` and `backgroundView`
+    /// based on the screen's orientation, size, and safe area insets.
     override open func layoutSubviews() {
         super.layoutSubviews()
 
@@ -217,6 +227,9 @@ open class ToastView: UIView {
         )
     }
 
+    /// Determines whether the toast view should handle touch events.
+    ///
+    /// Returns the view itself if it is user-interactable and the touch point is within its frame.
     override open func hitTest(_ point: CGPoint, with event: UIEvent!) -> UIView? {
         if let superview = self.superview {
             let pointInWindow = self.convert(point, to: superview)

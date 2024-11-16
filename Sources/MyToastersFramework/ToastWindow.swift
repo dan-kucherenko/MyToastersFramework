@@ -1,5 +1,11 @@
 import UIKit
 
+/// A custom window for displaying toast notifications.
+///
+/// `ToastWindow` acts as a dedicated window to manage and display toast messages at the highest window level.
+/// It integrates seamlessly with the application and handles layout updates, keyboard events, and rotation.
+///
+/// - Note: Use `ToastWindow.shared` to access the singleton instance.
 open class ToastWindow: UIWindow {
 
     // MARK: - Public Property
@@ -14,6 +20,11 @@ open class ToastWindow: UIWindow {
         return ToastWindow(frame: frame, mainWindow: mainWindow)
     }()
 
+    /// The root view controller of the `ToastWindow`.
+    ///
+    /// - If `isShowing` is `true`, this will return `nil`.
+    /// - If `isStatusBarOrientationChanging` is `true`, this will also return `nil`.
+    /// - Otherwise, it will return the root view controller of the main application window.
     override open var rootViewController: UIViewController? {
         get {
             guard !self.isShowing else {
@@ -122,25 +133,35 @@ open class ToastWindow: UIWindow {
     }
 
     // MARK: - Public method
+    
+    /// Adds a subview to the `ToastWindow`.
+    ///
+    /// The subview is also added to the top-most window in the application.
+    ///
+    /// - Parameter view: The subview to be added.
     override open func addSubview(_ view: UIView) {
         super.addSubview(view)
         self.originalSubviews.addPointer(Unmanaged.passUnretained(view).toOpaque())
         self.topWindow()?.addSubview(view)
     }
 
+    /// Ensures the main application window becomes the key window after `ToastWindow`.
     open override func becomeKey() {
         super.becomeKey()
         mainWindow?.makeKey()
     }
 
-    // MARK: - Private method
+}
+
+// MARK: - Private methods
+private extension ToastWindow {
     @objc
-    private func statusBarOrientationWillChange() {
+    func statusBarOrientationWillChange() {
         self.isStatusBarOrientationChanging = true
     }
 
     @objc
-    private func statusBarOrientationDidChange() {
+    func statusBarOrientationDidChange() {
         if UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .first?.interfaceOrientation != nil {
@@ -150,7 +171,7 @@ open class ToastWindow: UIWindow {
     }
 
     @objc
-    private func applicationDidBecomeActive() {
+    func applicationDidBecomeActive() {
         if UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .first?.interfaceOrientation != nil {
@@ -159,7 +180,7 @@ open class ToastWindow: UIWindow {
     }
 
     @objc
-    private func keyboardWillShow() {
+    func keyboardWillShow() {
         guard let topWindow = self.topWindow(),
               let subviews = self.originalSubviews.allObjects as? [UIView] else { return }
         for subview in subviews {
@@ -168,14 +189,14 @@ open class ToastWindow: UIWindow {
     }
 
     @objc
-    private func keyboardDidHide() {
+    func keyboardDidHide() {
         guard let subviews = self.originalSubviews.allObjects as? [UIView] else { return }
         for subview in subviews {
             super.addSubview(subview)
         }
     }
 
-    private func handleRotate() {
+    func handleRotate() {
         if let windowScene = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .first,
@@ -193,7 +214,7 @@ open class ToastWindow: UIWindow {
         }
     }
 
-    private func angleForOrientation(_ orientation: UIInterfaceOrientation) -> Double {
+    func angleForOrientation(_ orientation: UIInterfaceOrientation) -> Double {
         switch orientation {
         case .landscapeLeft: return -.pi / 2
         case .landscapeRight: return .pi / 2
@@ -203,7 +224,7 @@ open class ToastWindow: UIWindow {
     }
 
     /// Returns top window that isn't self
-    private func topWindow() -> UIWindow? {
+    func topWindow() -> UIWindow? {
         if let windowScene = UIApplication.shared.connectedScenes.first(
             where: {
                 $0.activationState == .foregroundActive
