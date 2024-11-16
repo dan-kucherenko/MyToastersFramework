@@ -7,6 +7,9 @@ public class Delay: NSObject {
 }
 
 open class Toast: Operation, @unchecked Sendable {
+    public var appearanceAnimation: AppearanceAnimationStyle = .fadeIn
+    public var disappearanceAnimation: DisappearanceAnimationStyle = .fadeOut
+    public var animationDuration: TimeInterval = 0.3
 
     // MARK: Properties
     @MainActor
@@ -56,9 +59,19 @@ open class Toast: Operation, @unchecked Sendable {
 
     /// Initializer.
     /// Instantiates `self.view`, so must be called on main thread.
-    public init(text: String?, delay: TimeInterval = 0, duration: TimeInterval = Delay.short) {
+    public init(
+        text: String?,
+        delay: TimeInterval = 0,
+        duration: TimeInterval = Delay.short,
+        appearanceAnimation: AppearanceAnimationStyle = .fadeIn,
+        disappearanceAnimation: DisappearanceAnimationStyle = .fadeOut,
+        animationDuration: TimeInterval = 0.3
+    ) {
         self.delay = delay
         self.duration = duration
+        self.appearanceAnimation = appearanceAnimation
+        self.disappearanceAnimation = disappearanceAnimation
+        self.animationDuration = animationDuration
         super.init()
 
         Task { @MainActor in
@@ -105,43 +118,40 @@ open class Toast: Operation, @unchecked Sendable {
     }
 
     override open func main() {
-        self.isExecuting = true
+        guard !isCancelled else { finish(); return }
 
         DispatchQueue.main.async {
-            self.view.setNeedsLayout()
-            self.view.alpha = 0
+            // Add the toast view to the ToastWindow
             ToastWindow.shared.addSubview(self.view)
 
-            UIView.animate(
-                withDuration: 0.5,
-                delay: self.delay,
-                options: .beginFromCurrentState,
-                animations: {
-                    self.view.alpha = 1
-                },
-                completion: { _ in
-                    if ToastCenter.default.isSupportAccessibility {
-                        UIAccessibility.post(notification: .announcement, argument: self.view.text)
-                        UIView.animate(
-                            withDuration: self.duration,
-                            animations: {
-                                self.view.alpha = 1.0001
-                            },
-                            completion: { _ in
-                                self.finish()
-                                UIView.animate(
-                                    withDuration: 0.5,
-                                    animations: {
-                                        self.view.alpha = 0
-                                    },
-                                    completion: { _ in
-                                        self.view.removeFromSuperview()
-                                    }
-                                )
-                            }
-                        )
-                    }}
-            )
+            // Apply appearance animation
+            self.appearanceAnimation.apply(to: self.view, duration: self.animationDuration) { [weak self] in
+                guard let self = self else { return }
+                guard !self.isCancelled else {
+                    // If canceled, remove the view and finish
+                    self.view.removeFromSuperview()
+                    self.finish()
+                    return
+                }
+
+                // Keep the toast visible for the duration
+                DispatchQueue.main.asyncAfter(deadline: .now() + self.duration) { [weak self] in
+                    guard let self = self else { return }
+                    guard !self.isCancelled else {
+                        // If canceled during duration, remove the view and finish
+                        self.view.removeFromSuperview()
+                        self.finish()
+                        return
+                    }
+
+                    // Apply disappearance animation
+                    self.disappearanceAnimation.apply(to: self.view, duration: self.animationDuration) {
+                        // Remove the view and mark the operation as finished
+                        self.view.removeFromSuperview()
+                        self.finish()
+                    }
+                }
+            }
         }
     }
 
