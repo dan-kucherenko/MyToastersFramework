@@ -219,19 +219,11 @@ open class ToastView: UIView {
     public func startTimerAnimation(duration: TimeInterval) {
         guard !actionButton.isHidden else { return }
 
-//        timerBar.transform = .identity
-
         UIView.animate(withDuration: duration, delay: 0, options: .curveLinear) {
             self.timerBar.transform = CGAffineTransform(scaleX: 0.01, y: 1)
         } completion: { _ in
             self.timerBar.transform = .identity
         }
-    }
-
-    @objc
-    private func buttonTapped() {
-        self.buttonAction?()
-        delegate?.toastViewDidRequestDismissal(self)
     }
 
     // MARK: Layout
@@ -267,6 +259,33 @@ open class ToastView: UIView {
         )
         let toastHeight = max(imageViewSize.height, textLabelSize.height) + 2 * padding
 
+        applyConstraints(
+            padding: padding,
+            imageViewSize: imageViewSize,
+            buttonSize: buttonSize,
+            toastWidth: toastWidth,
+            toastHeight: toastHeight
+        )
+    }
+
+    /// Determines whether the toast view should handle touch events.
+    ///
+    /// Returns the view itself if it is user-interactable and the touch point is within its frame.
+    override open func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let hitView = super.hitTest(point, with: event)
+        if hitView == self {
+            return actionButton.isHidden ? nil : actionButton
+        }
+        return hitView
+    }
+
+    private func applyConstraints(
+        padding: CGFloat,
+        imageViewSize: CGSize,
+        buttonSize: CGSize,
+        toastWidth: CGFloat,
+        toastHeight: CGFloat
+    ) {
         backgroundView.snp.remakeConstraints { make in
             make.edges.equalToSuperview()
         }
@@ -320,14 +339,9 @@ open class ToastView: UIView {
         }
     }
 
-    /// Determines whether the toast view should handle touch events.
-    ///
-    /// Returns the view itself if it is user-interactable and the touch point is within its frame.
-    override open func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        let hitView = super.hitTest(point, with: event)
-        if hitView == self {
-            return actionButton.isHidden ? nil : actionButton
-        }
-        return hitView
+    @objc
+    private func buttonTapped() {
+        self.buttonAction?()
+        delegate?.toastViewDidRequestDismissal(self)
     }
 }

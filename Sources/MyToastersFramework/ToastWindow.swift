@@ -128,10 +128,6 @@ open class ToastWindow: UIWindow {
         fatalError("init(coder:) has not been implemented: please use ToastWindow.shared")
     }
 
-    @objc private func deviceOrientationDidChange() {
-        self.handleRotate() // Update your view orientation
-    }
-
     // MARK: - Public method
 
     /// Adds a subview to the `ToastWindow`.
@@ -155,6 +151,11 @@ open class ToastWindow: UIWindow {
 
 // MARK: - Private methods
 private extension ToastWindow {
+    @objc
+    func deviceOrientationDidChange() {
+        self.handleRotate() // Update your view orientation
+    }
+
     @objc
     func statusBarOrientationWillChange() {
         self.isStatusBarOrientationChanging = true
