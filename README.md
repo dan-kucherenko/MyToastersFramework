@@ -85,11 +85,11 @@ dependencies: [
 
 ### Cocoa Pods
 
-# Installation with CocoaPods
+### Installation with CocoaPods
 
 To use `MyToastersFramework` in your project, you can integrate it using [CocoaPods](https://cocoapods.org).
 
-## Steps to Integrate
+### Steps to Integrate
 
 1. Add the following line to your project's `Podfile`:
 
