@@ -17,7 +17,8 @@ Pod::Spec.new do |spec|
 
   spec.name         = "MyToastersFramework"
   spec.version      = "0.0.1"
-  spec.summary      = "This is a the improved framework for Toasts for iOS"
+  spec.summary      = "A lightweight and customizable framework for creating interactive and visually appealing toast notifications in your application
+"
 
   # This description is used to generate tags and improve search results.
   #   * Think: What does it do? Why did you write it? What is the focus?
@@ -27,7 +28,7 @@ Pod::Spec.new do |spec|
   spec.description  = <<-DESC
   This is a framework created on base of Toaster. It was done 
   in order to improve some issues with Toasters and make a more convenient 
-  usage for the developers
+  usage for the developers. It's a framework for creating interactive and visually appealing toast notifications in your application
                    DESC
 
   spec.homepage     = "https://github.com/dan-kucherenko/MyToastersFramework"
@@ -137,6 +138,7 @@ Pod::Spec.new do |spec|
   # spec.requires_arc = true
 
   # spec.xcconfig = { "HEADER_SEARCH_PATHS" => "$(SDKROOT)/usr/include/libxml2" }
-  # spec.dependency "JSONKit", "~> 1.4"
+  spec.dependency "SnapKit", "~> 5.0.0"
+  
 
 end
