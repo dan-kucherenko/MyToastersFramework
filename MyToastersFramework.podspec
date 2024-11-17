@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
   #
 
   spec.name         = "MyToastersFramework"
-  spec.version      = "0.0.1"
+  spec.version      = "0.0.2"
   spec.summary      = "A lightweight and customizable framework for creating interactive and visually appealing toast notifications in your application
 "
 
