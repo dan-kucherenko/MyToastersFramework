@@ -166,17 +166,48 @@ open class ToastView: UIView {
         return imageView
     }()
 
+    public let actionButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.isHidden = true
+        button.titleLabel?.font = .systemFont(ofSize: 14, weight: .bold)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .clear
+        return button
+    }()
+
+    /// Completion handler for the button's action.
+    private var buttonAction: (() -> Void)?
+
     // MARK: Initializing
     public init() {
         super.init(frame: .zero)
-        self.isUserInteractionEnabled = false
+        self.isUserInteractionEnabled = true
         self.addSubview(self.backgroundView)
         self.addSubview(self.imageView)
         self.addSubview(self.textLabel)
+        self.addSubview(self.actionButton)
+
+        self.actionButton.isUserInteractionEnabled = true
+        self.actionButton.addTarget(self, action: #selector(self.buttonTapped), for: .touchUpInside)
     }
 
     required convenience public init?(coder aDecoder: NSCoder) {
         self.init()
+    }
+
+    /// Configures the action button with a title and completion handler.
+    /// - Parameters:
+    ///   - title: The title of the button.
+    ///   - action: The action to execute when the button is tapped.
+    public func configureButton(title: String, action: @escaping () -> Void) {
+        self.actionButton.setTitle(title, for: .normal)
+        self.actionButton.isHidden = false
+        self.buttonAction = action
+        self.setNeedsLayout()
+    }
+
+    @objc private func buttonTapped() {
+        self.buttonAction?()
     }
 
     // MARK: Layout
@@ -196,6 +227,13 @@ open class ToastView: UIView {
             CGSize(
                 width: UIScreen.main.bounds.width * maxWidthRatio - imageViewSize.width - 3 * padding,
                 height: CGFloat.greatestFiniteMagnitude
+            )
+        )
+
+        let buttonSize = actionButton.isHidden ? .zero : actionButton.sizeThatFits(
+            CGSize(
+                width: CGFloat.greatestFiniteMagnitude,
+                height: 30
             )
         )
 
@@ -226,6 +264,18 @@ open class ToastView: UIView {
             make.centerY.equalToSuperview()
         }
 
+        actionButton.snp.remakeConstraints { make in
+            make.leading.equalTo(textLabel.snp.trailing).offset(padding)
+            make.trailing.equalToSuperview().offset(-padding)
+            make.centerY.equalToSuperview()
+            if !actionButton.isHidden {
+                make.width.equalTo(buttonSize.width)
+                make.height.equalTo(buttonSize.height)
+            } else {
+                make.width.height.equalTo(0)
+            }
+        }
+
         self.snp.remakeConstraints { make in
             make.width.equalTo(toastWidth)
             make.height.equalTo(toastHeight)
@@ -237,14 +287,11 @@ open class ToastView: UIView {
     /// Determines whether the toast view should handle touch events.
     ///
     /// Returns the view itself if it is user-interactable and the touch point is within its frame.
-    override open func hitTest(_ point: CGPoint, with event: UIEvent!) -> UIView? {
-        if let superview = self.superview {
-            let pointInWindow = self.convert(point, to: superview)
-            let contains = self.frame.contains(pointInWindow)
-            if contains && self.isUserInteractionEnabled {
-                return self
-            }
+    override open func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let hitView = super.hitTest(point, with: event)
+        if hitView == self {
+            return actionButton.isHidden ? nil : actionButton
         }
-        return nil
+        return hitView
     }
 }

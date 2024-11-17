@@ -33,6 +33,9 @@ open class Toast: Operation, @unchecked Sendable {
         set { self.view.image = newValue }
     }
 
+    public var buttonTitle: String?
+    public var buttonAction: (() -> Void)?
+
     public var delay: TimeInterval
     public var duration: TimeInterval
 
@@ -82,6 +85,8 @@ open class Toast: Operation, @unchecked Sendable {
     public init(
         text: String?,
         image: UIImage? = nil,
+        buttonTitle: String? = nil,
+        buttonAction: (() -> Void)? = nil,
         delay: TimeInterval = 0,
         duration: TimeInterval = Delay.short,
         appearanceAnimation: AppearanceAnimationStyle = .fadeIn,
@@ -97,6 +102,8 @@ open class Toast: Operation, @unchecked Sendable {
 
         self.text = text
         self.image = image
+        self.buttonTitle = buttonTitle
+        self.buttonAction = buttonAction
     }
 
     /// Initializes a `Toast` instance with attributed text.
@@ -112,6 +119,8 @@ open class Toast: Operation, @unchecked Sendable {
     public init(
         attributedText: NSAttributedString?,
         image: UIImage? = nil,
+        buttonTitle: String? = nil,
+        buttonAction: (() -> Void)? = nil,
         delay: TimeInterval = 0,
         duration: TimeInterval = Delay.short,
         appearanceAnimation: AppearanceAnimationStyle = .fadeIn,
@@ -127,6 +136,8 @@ open class Toast: Operation, @unchecked Sendable {
 
         self.attributedText = attributedText
         self.image = image
+        self.buttonTitle = buttonTitle
+        self.buttonAction = buttonAction
     }
 
     // MARK: Showing
@@ -183,6 +194,10 @@ open class Toast: Operation, @unchecked Sendable {
 
         DispatchQueue.main.async {
             ToastWindow.shared.addSubview(self.view)
+
+            if let title = self.buttonTitle, let action = self.buttonAction {
+                self.view.configureButton(title: title, action: action)
+            }
 
             self.appearanceAnimation.apply(to: self.view, duration: self.animationDuration) { [weak self] in
                 guard let self = self else { return }
