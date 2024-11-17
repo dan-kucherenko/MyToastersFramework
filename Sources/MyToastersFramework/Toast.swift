@@ -193,6 +193,7 @@ open class Toast: Operation, @unchecked Sendable {
         guard !isCancelled else { finish(); return }
 
         DispatchQueue.main.async {
+            self.view.delegate = self
             ToastWindow.shared.addSubview(self.view)
 
             if let title = self.buttonTitle, let action = self.buttonAction {
@@ -207,6 +208,8 @@ open class Toast: Operation, @unchecked Sendable {
                     self.finish()
                     return
                 }
+
+                view.startTimerAnimation(duration: duration)
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + self.duration) { [weak self] in
                     guard let self = self else { return }
@@ -231,5 +234,15 @@ open class Toast: Operation, @unchecked Sendable {
     func finish() {
         self.isExecuting = false
         self.isFinished = true
+    }
+}
+
+@MainActor
+extension Toast: @preconcurrency ToastViewDelegate {
+    func toastViewDidRequestDismissal(_ toastView: ToastView) {
+        self.disappearanceAnimation.apply(to: toastView, duration: self.animationDuration) {
+            toastView.removeFromSuperview()
+            self.finish()
+        }
     }
 }

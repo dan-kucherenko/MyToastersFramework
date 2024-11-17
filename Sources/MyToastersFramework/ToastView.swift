@@ -10,6 +10,8 @@ open class ToastView: UIView {
 
     // MARK: Properties
 
+    weak var delegate: ToastViewDelegate?
+
     open var text: String? {
         get { return self.textLabel.text }
         set { self.textLabel.text = newValue }
@@ -166,13 +168,20 @@ open class ToastView: UIView {
         return imageView
     }()
 
-    public let actionButton: UIButton = {
+    private let actionButton: UIButton = {
         let button = UIButton(type: .system)
         button.isHidden = true
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .bold)
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = .clear
         return button
+    }()
+
+    private let timerBar: UIView = {
+        let view = UIView()
+        view.backgroundColor = .systemBlue
+        view.layer.cornerRadius = 2
+        return view
     }()
 
     /// Completion handler for the button's action.
@@ -186,6 +195,7 @@ open class ToastView: UIView {
         self.addSubview(self.imageView)
         self.addSubview(self.textLabel)
         self.addSubview(self.actionButton)
+        self.addSubview(timerBar)
 
         self.actionButton.isUserInteractionEnabled = true
         self.actionButton.addTarget(self, action: #selector(self.buttonTapped), for: .touchUpInside)
@@ -206,8 +216,22 @@ open class ToastView: UIView {
         self.setNeedsLayout()
     }
 
-    @objc private func buttonTapped() {
+    public func startTimerAnimation(duration: TimeInterval) {
+        guard !actionButton.isHidden else { return }
+
+//        timerBar.transform = .identity
+
+        UIView.animate(withDuration: duration, delay: 0, options: .curveLinear) {
+            self.timerBar.transform = CGAffineTransform(scaleX: 0.01, y: 1)
+        } completion: { _ in
+            self.timerBar.transform = .identity
+        }
+    }
+
+    @objc
+    private func buttonTapped() {
         self.buttonAction?()
+        delegate?.toastViewDidRequestDismissal(self)
     }
 
     // MARK: Layout
@@ -274,6 +298,18 @@ open class ToastView: UIView {
             } else {
                 make.width.height.equalTo(0)
             }
+        }
+
+        timerBar.snp.remakeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.height.equalTo(4)
+            make.bottom.equalToSuperview().offset(-5)
+        }
+
+        if actionButton.isHidden {
+            timerBar.isHidden = true
+        } else {
+            timerBar.isHidden = false
         }
 
         self.snp.remakeConstraints { make in
