@@ -107,7 +107,7 @@ To use `MyToastersFramework` in your project, you can integrate it using [CocoaP
 4. Import the framework where needed in your Swift files:
 
    ```swift
-   import MyToastersFramework`
+   import MyToastersFramework
    ```
 
 ---
